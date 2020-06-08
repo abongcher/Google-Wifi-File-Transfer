@@ -73,14 +73,14 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            int[] grantResults) {
+                                           int[] grantResults) {
         switch (requestCode) {
-        case PERMISSIONS_REQUEST_CODE_ACCESS_FINE_LOCATION:
-            if  (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                Log.e(TAG, "Fine location permission is not granted!");
-                finish();
-            }
-            break;
+            case PERMISSIONS_REQUEST_CODE_ACCESS_FINE_LOCATION:
+                if  (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    Log.e(TAG, "Fine location permission is not granted!");
+                    finish();
+                }
+                break;
         }
     }
 
@@ -98,9 +98,11 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
             return false;
         }
 
-        if (!wifiManager.isP2pSupported()) {
-            Log.e(TAG, "Wi-Fi Direct is not supported by the hardware or Wi-Fi is off.");
-            return false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (!wifiManager.isP2pSupported()) {
+                Log.e(TAG, "Wi-Fi Direct is not supported by the hardware or Wi-Fi is off.");
+                return false;
+            }
         }
 
         manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
@@ -118,7 +120,7 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
         return true;
     }
 
-    private Button wifiEnable, wifiDiscover;
+    private Button enableWifi, discoverWifi;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -137,16 +139,16 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                    && checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) {
+                && checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     WiFiDirectActivity.PERMISSIONS_REQUEST_CODE_ACCESS_FINE_LOCATION);
             // After this point you wait for callback in
             // onRequestPermissionsResult(int, String[], int[]) overridden method
         }
 
-        wifiEnable = (Button) findViewById(R.id.atn_direct_enable);
-        wifiEnable.setOnClickListener(new View.OnClickListener() {
+        enableWifi = (Button) findViewById(R.id.atn_direct_enable);
+        enableWifi.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (manager != null && channel != null) {
@@ -162,8 +164,8 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
             }
         });
 
-        wifiDiscover = (Button) findViewById(R.id.atn_direct_discover);
-        wifiDiscover.setOnClickListener(new View.OnClickListener() {
+        discoverWifi = (Button) findViewById(R.id.atn_direct_discover);
+        discoverWifi.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (!isWifiP2pEnabled) {
@@ -173,7 +175,7 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
                 final DeviceListFragment fragment = (DeviceListFragment) getFragmentManager()
                         .findFragmentById(R.id.frag_list);
                 fragment.onInitiateDiscovery();
-                manager.discoverPeers(channel, new ActionListener() {
+                manager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
 
                     @Override
                     public void onSuccess() {
@@ -258,7 +260,7 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 //                final DeviceListFragment fragment = (DeviceListFragment) getFragmentManager()
 //                        .findFragmentById(R.id.frag_list);
 //                fragment.onInitiateDiscovery();
-//                manager.discoverPeers(channel, new ActionListener() {
+//                manager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
 //
 //                    @Override
 //                    public void onSuccess() {
@@ -376,3 +378,4 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 
     }
 }
+
